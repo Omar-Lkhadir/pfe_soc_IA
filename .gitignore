@@ -1,11 +1,8 @@
-# Données brutes et volumineuses (régénérées via les scripts nettoyage.py /
-# nettoiage.py, pas versionnées : trop grosses pour GitHub, notamment
-# data/raw (14 Go) et les modèles entraînés > 100 Mo)
+# Données brutes (14 Go, régénérée via nettoyage.py/nettoiage.py) : dépasse
+# la limite physique de 2 Go par fichier de GitHub/Git LFS, impossible à
+# héberger ici quel que soit le plan. Les .pkl/.npy (models/data) restants
+# sont versionnés via Git LFS (voir .gitattributes).
 data/raw/
-isolation_forest/data/
-isolation_forest/models/
-random_forest/data/
-random_forest/models/
 
 # Python
 __pycache__/
