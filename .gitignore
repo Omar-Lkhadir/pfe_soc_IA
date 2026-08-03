@@ -1,0 +1,18 @@
+# Données brutes et volumineuses (régénérées via les scripts nettoyage.py /
+# nettoiage.py, pas versionnées : trop grosses pour GitHub, notamment
+# data/raw (14 Go) et les modèles entraînés > 100 Mo)
+data/raw/
+isolation_forest/data/
+isolation_forest/models/
+random_forest/data/
+random_forest/models/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Environnements virtuels
+venv/
+.venv/
+env/
