@@ -4,6 +4,13 @@
 # sont versionnés via Git LFS (voir .gitattributes).
 data/raw/
 
+# Intermédiaires canoniques multi-source (776 Mo, régénérés via
+# commun/build_training_data.py + commun/combine_and_split.py à partir de
+# data/raw/ et TEST/test1/data/raw/, tous deux déjà exclus ci-dessus) : pas
+# le livrable (les modèles _v2_canonical.pkl le sont), pas la peine de
+# saturer le quota LFS avec des fichiers reconstructibles en ~5 min.
+commun/data/
+
 # Python
 __pycache__/
 *.pyc

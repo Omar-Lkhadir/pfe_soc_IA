@@ -51,14 +51,18 @@ TIER1_FEATURES = TIER1_RAW + TCP_FLAG_COLS + DERIVED_COLS  # 17 features
 # PALIER 2 — étendu, optionnel (NaN si l'adaptateur ne peut pas le remplir)
 # ============================================================
 TIER2_FEATURES = [
-    'LONGEST_FLOW_PKT', 'SHORTEST_FLOW_PKT',
+    'LONGEST_FLOW_PKT',
+    # SHORTEST_FLOW_PKT retirée : contrôle de dérive (étape 5 du plan) a
+    # mesuré un KS D=0.999 entre sources (quasi séparateur de source
+    # déguisé, pas un signal d'attaque) -> risque de shortcut-learning trop
+    # élevé pour la garder. Voir commun/rapport_derive_et_equilibre.txt.
     'SRC_TO_DST_IAT_AVG', 'SRC_TO_DST_IAT_STDDEV',
     'DST_TO_SRC_IAT_AVG', 'DST_TO_SRC_IAT_STDDEV',
-]  # 6 features
+]  # 5 features
 
 # Features utilisées par chaque modèle
 ISOLATION_FOREST_FEATURES = TIER1_FEATURES                    # 17, jamais de NaN
-RANDOM_FOREST_FEATURES = TIER1_FEATURES + TIER2_FEATURES      # 23, NaN toléré (palier 2)
+RANDOM_FOREST_FEATURES = TIER1_FEATURES + TIER2_FEATURES      # 22, NaN toléré (palier 2)
 
 # Colonnes non-feature toujours présentes en sortie d'un adaptateur
 META_COLS = ['Label_binaire', 'Attack_brut', 'source']

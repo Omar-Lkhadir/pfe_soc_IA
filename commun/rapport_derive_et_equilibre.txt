@@ -1,0 +1,75 @@
+RAPPORT — CONTROLE DE DERIVE PAR FEATURE + EQUILIBRE SOURCE x CATEGORIE
+==============================================================================
+
+NetFlow : 942,060 lignes | CICFlowMeter : 2,830,743 lignes
+
+------------------------------------------------------------------------------
+ETAPE 5 : CONTROLE DE DERIVE PAR FEATURE (test de Kolmogorov-Smirnov)
+------------------------------------------------------------------------------
+D >= 0.3 : separation nette par SOURCE plutot que par label -> a surveiller
+
+
+--- Normal (Label_binaire=0) ---
+  L4_DST_PORT_BUCKET           : D=0.166  p=2.0e-240
+  PROTOCOL                     : D=0.235  p=0.0e+00
+  IN_BYTES                     : D=0.574  p=0.0e+00 <-- SUSPECT
+  OUT_BYTES                    : D=0.489  p=0.0e+00 <-- SUSPECT
+  IN_PKTS                      : D=0.531  p=0.0e+00 <-- SUSPECT
+  OUT_PKTS                     : D=0.525  p=0.0e+00 <-- SUSPECT
+  FLOW_DURATION_MILLISECONDS   : D=0.460  p=0.0e+00 <-- SUSPECT
+  HAS_SYN                      : D=0.642  p=0.0e+00 <-- SUSPECT
+  HAS_ACK                      : D=0.498  p=0.0e+00 <-- SUSPECT
+  HAS_FIN                      : D=0.369  p=0.0e+00 <-- SUSPECT
+  HAS_RST                      : D=0.353  p=0.0e+00 <-- SUSPECT
+  HAS_PSH                      : D=0.501  p=0.0e+00 <-- SUSPECT
+  HAS_URG                      : D=0.116  p=6.9e-118
+  ratio_bytes                  : D=0.235  p=0.0e+00
+  total_bytes                  : D=0.531  p=0.0e+00 <-- SUSPECT
+  total_pkts                   : D=0.532  p=0.0e+00 <-- SUSPECT
+  duree_sec                    : D=0.460  p=0.0e+00 <-- SUSPECT
+  LONGEST_FLOW_PKT             : D=0.466  p=0.0e+00 <-- SUSPECT
+  SHORTEST_FLOW_PKT            : D=0.735  p=0.0e+00 <-- SUSPECT
+  SRC_TO_DST_IAT_AVG           : D=0.572  p=0.0e+00 <-- SUSPECT
+  SRC_TO_DST_IAT_STDDEV        : D=0.490  p=0.0e+00 <-- SUSPECT
+  DST_TO_SRC_IAT_AVG           : D=0.525  p=0.0e+00 <-- SUSPECT
+  DST_TO_SRC_IAT_STDDEV        : D=0.501  p=0.0e+00 <-- SUSPECT
+
+--- Attaque (Label_binaire=1) ---
+  L4_DST_PORT_BUCKET           : D=0.235  p=0.0e+00
+  PROTOCOL                     : D=0.248  p=0.0e+00
+  IN_BYTES                     : D=0.682  p=0.0e+00 <-- SUSPECT
+  OUT_BYTES                    : D=0.421  p=0.0e+00 <-- SUSPECT
+  IN_PKTS                      : D=0.448  p=0.0e+00 <-- SUSPECT
+  OUT_PKTS                     : D=0.230  p=0.0e+00
+  FLOW_DURATION_MILLISECONDS   : D=0.414  p=0.0e+00 <-- SUSPECT
+  HAS_SYN                      : D=0.726  p=0.0e+00 <-- SUSPECT
+  HAS_ACK                      : D=0.114  p=1.4e-113
+  HAS_FIN                      : D=0.221  p=0.0e+00
+  HAS_RST                      : D=0.211  p=0.0e+00
+  HAS_PSH                      : D=0.102  p=1.2e-91
+  HAS_URG                      : D=0.008  p=4.8e-01
+  ratio_bytes                  : D=0.474  p=0.0e+00 <-- SUSPECT
+  total_bytes                  : D=0.541  p=0.0e+00 <-- SUSPECT
+  total_pkts                   : D=0.385  p=0.0e+00 <-- SUSPECT
+  duree_sec                    : D=0.414  p=0.0e+00 <-- SUSPECT
+  LONGEST_FLOW_PKT             : D=0.541  p=0.0e+00 <-- SUSPECT
+  SHORTEST_FLOW_PKT            : D=0.999  p=0.0e+00 <-- SUSPECT
+  SRC_TO_DST_IAT_AVG           : D=0.462  p=0.0e+00 <-- SUSPECT
+  SRC_TO_DST_IAT_STDDEV        : D=0.457  p=0.0e+00 <-- SUSPECT
+  DST_TO_SRC_IAT_AVG           : D=0.056  p=3.5e-28
+  DST_TO_SRC_IAT_STDDEV        : D=0.125  p=2.6e-137
+
+=> 32 paire(s) suspecte(s) au total.
+
+------------------------------------------------------------------------------
+ETAPE 6 : TABLE SOURCE x CATEGORIE (Random Forest, 5 classes)
+------------------------------------------------------------------------------
+
+                    netflow cicflowmeter   total %_min_source
+brute_force           27651        15342   42993         35.7
+port_scanning          3147       158930  162077          1.9
+suspicious_activity    1499         1966    3465         43.3
+intrusion_reseau     332671       381372  714043         46.6
+acces_non_autorise     3132           36    3168          1.1
+
+<!> Categories quasi exclusives a une source (<5% de l'autre) : ['port_scanning', 'acces_non_autorise']
