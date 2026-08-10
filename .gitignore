@@ -4,6 +4,10 @@
 # sont versionnés via Git LFS (voir .gitattributes).
 data/raw/
 
+# Dataset Zeek/IoT-23 téléchargé (23 Mo, source externe - Stratosphere Lab,
+# voir l'URL dans commun/build_zeek_data.py pour le retélécharger).
+data/raw_zeek/
+
 # Intermédiaires canoniques multi-source (776 Mo, régénérés via
 # commun/build_training_data.py + commun/combine_and_split.py à partir de
 # data/raw/ et TEST/test1/data/raw/, tous deux déjà exclus ci-dessus) : pas

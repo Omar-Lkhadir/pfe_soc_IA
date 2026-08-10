@@ -42,6 +42,12 @@ MAPPING = {
     'ftp-patator': 'brute_force', 'ssh-patator': 'brute_force',
     'infiltration': 'acces_non_autorise', 'heartbleed': 'intrusion_reseau',
     'portscan': 'port_scanning',
+    # Libellés IoT-23 (format Zeek conn.log.labeled, botnets IoT) :
+    'partofahorizontalportscan': 'port_scanning',
+    'c&c': 'acces_non_autorise', 'c&c-filedownload': 'acces_non_autorise',
+    'c&c-heartbeat': 'acces_non_autorise', 'c&c-torii': 'acces_non_autorise',
+    'filedownload': 'acces_non_autorise', 'okiru': 'intrusion_reseau',
+    'attack': 'suspicious_activity',
     # Les libellés "Web Attack - Brute Force/XSS/Sql Injection" ne sont pas
     # mappés en dur ici : le tiret cadratin d'origine se corrompt de façon
     # non déterministe selon l'encodage de lecture du CSV, donc une

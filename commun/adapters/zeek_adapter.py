@@ -18,11 +18,12 @@ l'expose simplement pas dans ce champ).
 
 Palier 2 (IAT, taille min/max paquet) : absent de conn.log standard -> NaN.
 
-Statut : NON ENTRAÎNÉ, pas de données Zeek réelles disponibles cette session.
-Validé uniquement par test unitaire sur des lignes synthétiques construites
-d'après la documentation (voir tests/test_zeek_adapter.py). À faire passer en
-"entraîné" le jour où de vraies données conn.log sont disponibles, en suivant
-la même procédure que cicflowmeter_adapter.py.
+Statut : ENTRAÎNÉ + VALIDÉ sur données réelles (IoT-23 / Stratosphere Lab,
+CTU-IoT-Malware-Capture-3-1, commun/build_zeek_data.py). Note importante
+découverte sur données réelles (pas dans la doc) : le format .labeled
+IoT-23 est tab-séparé SAUF les 3 derniers champs (tunnel_parents, label,
+detailed-label), séparés par des espaces -> à gérer explicitement au
+parsing (voir build_zeek_data.py), sans quoi pandas fusionne ces 3 colonnes.
 """
 
 import numpy as np

@@ -1,0 +1,8 @@
+TEST ZERO-SHOT — Modeles v2 (NetFlow+CICFlowMeter) sur Zeek/IoT-23 reel
+======================================================================
+
+Isolation Forest v2 (seuil cicflowmeter, pas de seuil zeek dedie) :
+  Acc=97.6% Prec=97.6% Rec=100.0% F1=98.8% AUC=43.0% FPR=83.6%
+
+Random Forest v2 (151,567 attaques) :
+  Accuracy=8.1% F1 pondere=15.0%
