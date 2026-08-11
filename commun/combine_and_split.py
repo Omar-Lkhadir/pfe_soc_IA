@@ -1,14 +1,6 @@
 """
-Étape 7 du plan : combine les deux sources canoniques et fait un split
-train/test unique, stratifié par (source x label) pour que les deux formats
-et les deux classes soient représentés dans les deux splits. Le split est
-ensuite réutilisé tel quel par les deux scripts d'entraînement (Isolation
-Forest filtre sur le Normal, Random Forest filtre sur les Attaques) — c'est
-le MÊME train/test pour les deux modèles, comme dans le pipeline v1.
-
-Les sous-ensembles de test PAR SOURCE (nécessaires étape 10 pour prouver la
-généralisation séparément) se dérivent simplement en filtrant
-combined_test.pkl sur la colonne `source` — pas besoin d'un split dédié.
+Combine les 3 sources canoniques (NetFlow, CICFlowMeter, Zeek/IoT-23) en un
+seul jeu d'entraînement/test, split stratifié source x label.
 """
 
 import os
@@ -22,16 +14,17 @@ from commun import canonical_schema as cs
 DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
 
 print("=" * 70)
-print("COMBINAISON DES SOURCES + SPLIT STRATIFIE (source x label)")
+print("COMBINAISON — NetFlow + CICFlowMeter + Zeek/IoT-23")
 print("=" * 70)
 
 df_nf = pd.read_pickle(os.path.join(DATA_DIR, 'netflow_canonical.pkl'))
 df_cic = pd.read_pickle(os.path.join(DATA_DIR, 'cicflowmeter_canonical.pkl'))
+df_zeek = pd.read_pickle(os.path.join(DATA_DIR, 'zeek_canonical.pkl'))
 if 'jour' in df_cic.columns:
     df_cic = df_cic.drop(columns=['jour'])
 
-df = pd.concat([df_nf, df_cic], ignore_index=True)
-del df_nf, df_cic
+df = pd.concat([df_nf, df_cic, df_zeek], ignore_index=True)
+del df_nf, df_cic, df_zeek
 print(f"\nCombiné : {len(df):,} lignes")
 print(df.groupby(['source', 'Label_binaire']).size().unstack(fill_value=0))
 
