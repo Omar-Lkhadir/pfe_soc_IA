@@ -18,7 +18,7 @@ print("VALIDATION — commun/inference.py (NIDSPredictor)")
 print("=" * 70)
 
 predictor = NIDSPredictor()
-print(f"\n✓ Modèles chargés. Sources IF disponibles : {list(predictor.if_models.keys())}")
+print(f"\n✓ Modèles chargés. Sources palier 1 disponibles : {list(predictor.medianes_par_source.keys())}")
 
 # ------------------------------------------------------------
 # 1. Détection de source par event.module explicite

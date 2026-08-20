@@ -1,10 +1,18 @@
 """
 Point d'intégration UNIQUE pour ELK/Logstash : une seule classe, NIDSPredictor,
-qui charge tous les modèles (3x Isolation Forest par source + 1x Random Forest
-partagé) et expose une seule méthode predict(event, source=None).
+qui charge tous les modèles (1x palier 1 supervisé partagé entre les 3
+sources + 1x Random Forest partagé) et expose une seule méthode
+predict(event, source=None).
 
-Routage, jamais de fusion : pour un événement donné, un seul modèle IF est
-utilisé (celui de sa source), jamais un vote/moyenne entre plusieurs.
+Palier 1 : depuis isolation_forest/scripts/entrainement_supervise.py, un
+HistGradientBoostingClassifier supervisé (même famille que Random Forest)
+a remplacé l'ancien Isolation Forest non-supervisé (3 modèles, un par
+source, conservés intacts dans isolation_forest/models/{source}/ pour
+référence/rollback mais plus utilisés en production). Compromis assumé :
+ce nouveau palier 1 ne détecte que des patterns ressemblant aux attaques
+vues à l'entraînement, il perd la capacité "zero-day" de l'ancien IF —
+décision utilisateur explicite, motivée par un gain de F1 massif (60-85%
+-> 96-99% selon la source) sur trafic connu.
 
 Détection de la source :
   - explicite (paramètre `source`, ou clé `event.module` de l'événement —
@@ -17,8 +25,9 @@ Gestion des cas limites (jamais de perte silencieuse d'événement) :
     (< SEUIL_IMPUTATION manquant)       -> imputation par la médiane de LA
                                             MÊME source -> ml_status =
                                             "scoring_degrade"
-  - source inconnue OU palier 1 trop
-    incomplet (>= SEUIL_IMPUTATION)     -> AUCUN scoring forcé -> ml_status =
+  - source inconnue/non validée OU
+    palier 1 trop incomplet
+    (>= SEUIL_IMPUTATION)               -> AUCUN scoring forcé -> ml_status =
                                             "format_non_reconnu" (l'événement
                                             n'est jamais perdu, juste non noté)
 """
@@ -79,19 +88,22 @@ class NIDSPredictor:
     beaucoup plus efficace pour du traitement en masse / nos propres tests)."""
 
     def __init__(self, md4_dir: str = MD4_DIR):
-        self.if_models = {}
         if_dir = os.path.join(md4_dir, 'isolation_forest', 'models')
+        self.palier1 = dict(
+            model=joblib.load(os.path.join(if_dir, 'model_supervise.pkl')),
+            seuil=joblib.load(os.path.join(if_dir, 'seuil_optimal_supervise.pkl'))['seuil_optimal'],
+        )
+        # Médianes par source (imputation en mode dégradé) : statistique
+        # descriptive indépendante du modèle de scoring -> toujours calculée
+        # par source, même si le palier 1 est maintenant un modèle partagé.
+        # Seules les sources ayant des médianes pré-calculées (validées sur
+        # données réelles) sont scorables ; suricata (adaptateur jamais
+        # entraîné/validé faute de données réelles) reste exclu ici.
+        self.medianes_par_source = {}
         for source in ['netflow', 'cicflowmeter', 'zeek']:
-            dossier = os.path.join(if_dir, source)
-            if not os.path.exists(os.path.join(dossier, 'model.pkl')):
-                continue
-            medianes_path = os.path.join(dossier, 'medianes_palier1.pkl')
-            self.if_models[source] = dict(
-                model=joblib.load(os.path.join(dossier, 'model.pkl')),
-                scaler=joblib.load(os.path.join(dossier, 'scaler.pkl')),
-                seuil=joblib.load(os.path.join(dossier, 'seuil_optimal.pkl'))['seuil_optimal'],
-                medianes=joblib.load(medianes_path) if os.path.exists(medianes_path) else None,
-            )
+            medianes_path = os.path.join(if_dir, source, 'medianes_palier1.pkl')
+            if os.path.exists(medianes_path):
+                self.medianes_par_source[source] = joblib.load(medianes_path)
 
         rf_dir = os.path.join(md4_dir, 'random_forest', 'models')
         self.rf_model = joblib.load(os.path.join(rf_dir, 'model.pkl'))
@@ -143,8 +155,8 @@ class NIDSPredictor:
         out['attack_category'] = pd.NA
         out['confidence'] = np.nan
 
-        if source not in self.if_models:
-            return out  # source inconnue du système -> tout en format_non_reconnu
+        if source not in self.medianes_par_source:
+            return out  # source inconnue/non validée -> tout en format_non_reconnu
 
         # --- complétude des colonnes BRUTES (les adaptateurs remplissent déjà
         # le palier 1 canonique par 0 via finalize_dtypes -> la détection doit
@@ -165,27 +177,31 @@ class NIDSPredictor:
         canon = self._adapt(source, raw_df)
         if canon is None:
             return out  # adaptation impossible -> tout en format_non_reconnu
-        modele = self.if_models[source]
+        medianes = self.medianes_par_source[source]
 
         # Événements dégradés : le 0 déjà mis par l'adaptateur (finalize_dtypes)
         # est remplacé par la médiane de CETTE source (jamais une constante
         # fabriquée entre sources), un peu plus large que le strict nécessaire
         # (tout le palier 1 de la ligne, pas juste les champs affectés — la
         # ligne reste marquée "scoring_degrade", donc explicitement moins fiable).
-        if modele['medianes'] and a_impute.any():
-            for col, med in modele['medianes'].items():
+        if medianes and a_impute.any():
+            for col, med in medianes.items():
                 canon.loc[a_impute, col] = med
 
         idx_scorable = ~trop_incomplet
         if idx_scorable.any():
             X = canon.loc[idx_scorable, cs.TIER1_FEATURES].values.astype(np.float32)
-            X_scaled = modele['scaler'].transform(X).astype(np.float32)
-            scores = modele['model'].decision_function(X_scaled)
-            y_pred = (scores < modele['seuil']).astype(bool)
+            # anomaly_score = probabilité d'attaque du classifieur supervisé
+            # (0-1, PLUS HAUT = plus suspect) -- sens inversé par rapport à
+            # l'ancien decision_function d'Isolation Forest (plus BAS = plus
+            # suspect). Impact si des dashboards Kibana existants trient sur
+            # ce champ : à adapter au moment de l'intégration ELK.
+            proba = self.palier1['model'].predict_proba(X)[:, 1]
+            y_pred = (proba >= self.palier1['seuil']).astype(bool)
 
             out.loc[idx_scorable, 'ml_status'] = np.where(a_impute.loc[idx_scorable], 'scoring_degrade', 'ok')
             out.loc[idx_scorable, 'is_attack'] = y_pred
-            out.loc[idx_scorable, 'anomaly_score'] = scores
+            out.loc[idx_scorable, 'anomaly_score'] = proba
 
         # --- Random Forest : uniquement sur les événements scorés ET détectés attaque ---
         mask_rf = idx_scorable & (out['is_attack'] == True)  # noqa: E712
