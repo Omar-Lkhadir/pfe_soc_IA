@@ -97,21 +97,27 @@ print(df_frais.groupby('categorie_5').size())
 # ============================================================
 # EVALUATION — modeles deja entraines
 # ============================================================
-IF_DIR = os.path.join(MD4_DIR, 'isolation_forest', 'models', 'cicflowmeter')
+IF_DIR = os.path.join(MD4_DIR, 'isolation_forest', 'models')
 RF_DIR = os.path.join(MD4_DIR, 'random_forest', 'models')
 
-model_if = joblib.load(os.path.join(IF_DIR, 'model.pkl'))
-scaler_if = joblib.load(os.path.join(IF_DIR, 'scaler.pkl'))
-seuil_if = joblib.load(os.path.join(IF_DIR, 'seuil_optimal.pkl'))['seuil_optimal']
+# Palier 1 supervisé (remplace l'ancien Isolation Forest cicflowmeter,
+# jamais re-vérifié contre cet échantillon frais jusqu'ici -- contrairement
+# à l'ancien IF, entraîné sur TOUT combined_train.pkl y compris le normal
+# 2018 exclu spécifiquement pour l'ancien IF).
+model_if = joblib.load(os.path.join(IF_DIR, 'model_supervise.pkl'))
+seuil_if = joblib.load(os.path.join(IF_DIR, 'seuil_optimal_supervise.pkl'))['seuil_global_fallback']
 
 X_if = df_frais[cs.ISOLATION_FOREST_FEATURES].values.astype(np.float32)
-scores = model_if.decision_function(scaler_if.transform(X_if).astype(np.float32))
-y_pred_if = (scores < seuil_if).astype(int)
+scores = model_if.predict_proba(X_if)[:, 1]
+y_pred_if = (scores >= seuil_if).astype(int)
 y_true = df_frais['Label_binaire'].values
-print(f"\n🌲 Isolation Forest (cicflowmeter) sur échantillon frais :")
+tn, fp, fn, tp = confusion_matrix(y_true, y_pred_if, labels=[0, 1]).ravel()
+fpr = fp / (fp + tn) * 100 if (fp + tn) > 0 else float('nan')
+print(f"\n🌲 Palier 1 supervisé (cicflowmeter, modèle partagé) sur échantillon frais :")
 print(f"   Acc={accuracy_score(y_true,y_pred_if)*100:.1f}% Prec={precision_score(y_true,y_pred_if,zero_division=0)*100:.1f}% "
       f"Rec={recall_score(y_true,y_pred_if,zero_division=0)*100:.1f}% F1={f1_score(y_true,y_pred_if,zero_division=0)*100:.1f}% "
-      f"AUC={roc_auc_score(y_true,scores*-1)*100:.1f}%")
+      f"AUC={roc_auc_score(y_true,scores)*100:.1f}% FPR={fpr:.2f}%")
+print(f"   TN={tn:,} FP={fp:,} FN={fn:,} TP={tp:,}")
 
 model_rf = joblib.load(os.path.join(RF_DIR, 'model.pkl'))
 le_rf = joblib.load(os.path.join(RF_DIR, 'label_encoder.pkl'))
