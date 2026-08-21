@@ -4,10 +4,10 @@ qui charge tous les modèles (1x palier 1 supervisé partagé entre les 3
 sources + 1x Random Forest partagé) et expose une seule méthode
 predict(event, source=None).
 
-Palier 1 : depuis isolation_forest/scripts/entrainement_supervise.py, un
+Palier 1 : depuis hist_gradient_boosting/scripts/entrainement.py, un
 HistGradientBoostingClassifier supervisé (même famille que Random Forest)
 a remplacé l'ancien Isolation Forest non-supervisé (3 modèles, un par
-source, conservés intacts dans isolation_forest/models/{source}/ pour
+source, conservés intacts dans hist_gradient_boosting/models/{source}/ pour
 référence/rollback mais plus utilisés en production). Compromis assumé :
 ce nouveau palier 1 ne détecte que des patterns ressemblant aux attaques
 vues à l'entraînement, il perd la capacité "zero-day" de l'ancien IF —
@@ -88,7 +88,7 @@ class NIDSPredictor:
     beaucoup plus efficace pour du traitement en masse / nos propres tests)."""
 
     def __init__(self, md4_dir: str = MD4_DIR):
-        if_dir = os.path.join(md4_dir, 'isolation_forest', 'models')
+        if_dir = os.path.join(md4_dir, 'hist_gradient_boosting', 'models')
         self.palier1 = dict(
             model=joblib.load(os.path.join(if_dir, 'model.pkl')),
             seuil=joblib.load(os.path.join(if_dir, 'seuil_optimal.pkl'))['seuil_optimal'],

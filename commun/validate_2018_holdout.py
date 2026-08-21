@@ -97,7 +97,7 @@ print(df_frais.groupby('categorie_5').size())
 # ============================================================
 # EVALUATION — modeles deja entraines
 # ============================================================
-IF_DIR = os.path.join(MD4_DIR, 'isolation_forest', 'models')
+IF_DIR = os.path.join(MD4_DIR, 'hist_gradient_boosting', 'models')
 RF_DIR = os.path.join(MD4_DIR, 'random_forest', 'models')
 
 # Palier 1 supervisé (remplace l'ancien Isolation Forest cicflowmeter,

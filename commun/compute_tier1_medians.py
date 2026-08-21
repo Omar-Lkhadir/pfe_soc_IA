@@ -6,7 +6,7 @@ manquant est complété par la médiane de SA PROPRE source — jamais une
 constante fabriquée entre sources, contrairement à l'imputation qui avait
 causé l'effondrement de performance du modèle v1/v2 sur des formats croisés).
 
-Sortie : isolation_forest/models/medianes_palier1/{source}.pkl
+Sortie : hist_gradient_boosting/models/medianes_palier1/{source}.pkl
 """
 
 import os
@@ -19,7 +19,7 @@ sys.path.insert(0, MD4_DIR)
 from commun import canonical_schema as cs
 
 DATA_DIR = os.path.join(MD4_DIR, 'commun', 'data')
-MODELS_DIR = os.path.join(MD4_DIR, 'isolation_forest', 'models')
+MODELS_DIR = os.path.join(MD4_DIR, 'hist_gradient_boosting', 'models')
 
 FICHIERS_SOURCE = {
     'netflow': 'netflow_canonical.pkl',
