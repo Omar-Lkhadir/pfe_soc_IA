@@ -36,7 +36,7 @@ def _load_models():
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "sources_disponibles": list(predictor.if_models.keys()) if predictor else []}
+    return {"status": "ok", "sources_disponibles": list(predictor.medianes_par_source.keys()) if predictor else []}
 
 
 @app.post("/predict")

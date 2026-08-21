@@ -231,4 +231,11 @@ class NIDSPredictor:
         raw_df = pd.DataFrame([raw_event])
         res = self.predict_batch(raw_df, source).iloc[0].to_dict()
         res['source'] = source
+        # NaN/pd.NA (attack_category et confidence pour un event non-attaque,
+        # ou anomaly_score/is_attack si format_non_reconnu) -> None : le JSON
+        # strict (RFC 8259, utilisé par FastAPI/Starlette) rejette NaN, donc
+        # /predict lèverait une ValueError sur CHAQUE event normal sans ceci.
+        for k, v in res.items():
+            if v is pd.NA or (isinstance(v, float) and np.isnan(v)):
+                res[k] = None
         return res
