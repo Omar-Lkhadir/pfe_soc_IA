@@ -62,7 +62,8 @@ ADAPTERS = {
 SIGNATURES = {
     'netflow': [{'L4_DST_PORT', 'IN_BYTES', 'PROTOCOL'}],
     'cicflowmeter': [{'Destination Port', 'Flow Duration'}, {'Dst Port', 'Flow Duration'}],
-    'zeek': [{'id.orig_p', 'id.resp_p', 'proto'}],
+    'zeek': [{'id.orig_p', 'id.resp_p', 'proto'},  # conn.log natif
+             {'destination.port', 'network.transport', 'zeek.connection.history'}],  # via Filebeat/ECS
     'suricata': [{'flow', 'proto'}, {'pkts_toserver', 'bytes_toserver'}],
 }
 

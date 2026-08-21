@@ -1,9 +1,13 @@
 """
 Tests unitaires des 4 adaptateurs sur des lignes synthétiques (construites
-à la main d'après la documentation de chaque format — pas de vraies données
-pour Zeek/Suricata cette session). Vérifie : le contrat de base.py
-(palier 1 complet sans NaN, palier 2 présent), et quelques valeurs dérivées
-clés (flags TCP, bucketisation port/protocole, conversions d'unités).
+à la main d'après la documentation officielle de chaque format -- pas de
+vraies données pour Suricata, jamais entraîné/validé faute de données
+réelles disponibles ; Zeek, lui, EST entraîné/validé sur données réelles
+IoT-23, cf. commun/build_zeek_data.py -- ces lignes synthétiques servent
+seulement à couvrir vite les cas limites, pas à le valider pour la
+première fois). Vérifie : le contrat de base.py (palier 1 complet sans
+NaN, palier 2 présent), et quelques valeurs dérivées clés (flags TCP,
+bucketisation port/protocole, conversions d'unités).
 
 Exécution : python commun/tests/test_adapters.py
 """
@@ -110,7 +114,7 @@ check('cicflowmeter: Label_binaire attaque', out_cic.loc[0, 'Label_binaire'] == 
 check('cicflowmeter: Label_binaire benign', out_cic.loc[1, 'Label_binaire'] == 0)
 
 # ============================================================
-print('\n=== ZeekAdapter (stub, non entraine) ===')
+print('\n=== ZeekAdapter — forme conn.log native (entraîné + validé sur IoT-23 réel) ===')
 df_zeek = pd.DataFrame({
     'id.resp_p': [22, 80],
     'proto': ['tcp', 'udp'],
@@ -130,6 +134,30 @@ check('zeek: HAS_FIN via history "F"', out_zeek.loc[0, 'HAS_FIN'] == 1)
 check('zeek: HAS_URG toujours 0 (non observable)', out_zeek['HAS_URG'].eq(0).all())
 check('zeek: palier 2 tout en NaN (non disponible)',
       out_zeek[cs.TIER2_FEATURES].isna().all().all())
+
+# ============================================================
+print('\n=== ZeekAdapter — forme Filebeat/ECS (voir TEST/test7) ===')
+# Mêmes flux que le bloc conn.log natif ci-dessus, ré-exprimés dans la forme
+# ECS réelle produite par le module Filebeat Zeek (vérifié sur
+# x-pack/filebeat/module/zeek/connection/config/connection.yml,
+# github.com/elastic/beats) -- doit donner un résultat IDENTIQUE au bloc
+# natif, preuve que les deux chemins convergent vers le même schéma
+# canonique. Garde-fou de non-régression pour le bug corrigé en TEST 7
+# (avant correctif : KeyError sur 'id.resp_p', absent de cette forme).
+df_zeek_ecs = pd.DataFrame({
+    'destination.port': [22, 80],
+    'network.transport': ['tcp', 'udp'],
+    'source.bytes': [1200, 600],
+    'destination.bytes': [300, 0],
+    'source.packets': [10, 3],
+    'destination.packets': [8, 0],
+    'event.duration': [0.15 * 1e9, 0.01 * 1e9],  # nanosecondes
+    'zeek.connection.history': ['ShADadF', 'D'],
+})
+out_zeek_ecs = ZeekAdapter().extract(df_zeek_ecs)
+check_contrat('zeek (ECS)', out_zeek_ecs)
+check('zeek (ECS): résultat identique à la forme native',
+      out_zeek_ecs[cs.TIER1_FEATURES].equals(out_zeek[cs.TIER1_FEATURES]))
 
 # ============================================================
 print('\n=== SuricataAdapter (stub, non entraine) ===')
