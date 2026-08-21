@@ -6,7 +6,7 @@ manquant est complété par la médiane de SA PROPRE source — jamais une
 constante fabriquée entre sources, contrairement à l'imputation qui avait
 causé l'effondrement de performance du modèle v1/v2 sur des formats croisés).
 
-Sortie : isolation_forest/models/{source}/medianes_palier1.pkl
+Sortie : isolation_forest/models/medianes_palier1/{source}.pkl
 """
 
 import os
@@ -38,10 +38,10 @@ for source, fichier in FICHIERS_SOURCE.items():
         continue
     df = pd.read_pickle(chemin)[cs.TIER1_FEATURES]
     medianes = df.median().to_dict()
-    out_dir = os.path.join(MODELS_DIR, source)
+    out_dir = os.path.join(MODELS_DIR, 'medianes_palier1')
     os.makedirs(out_dir, exist_ok=True)
-    joblib.dump(medianes, os.path.join(out_dir, 'medianes_palier1.pkl'))
-    print(f"   ✓ {source:<14s} -> {out_dir}\\medianes_palier1.pkl")
+    joblib.dump(medianes, os.path.join(out_dir, f'{source}.pkl'))
+    print(f"   ✓ {source:<14s} -> {out_dir}\\{source}.pkl")
     del df
 
 print("\n" + "=" * 70)

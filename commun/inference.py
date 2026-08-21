@@ -89,11 +89,9 @@ class NIDSPredictor:
 
     def __init__(self, md4_dir: str = MD4_DIR):
         if_dir = os.path.join(md4_dir, 'isolation_forest', 'models')
-        _seuils = joblib.load(os.path.join(if_dir, 'seuil_optimal_supervise.pkl'))
         self.palier1 = dict(
-            model=joblib.load(os.path.join(if_dir, 'model_supervise.pkl')),
-            seuil_par_source=_seuils['seuil_par_source'],
-            seuil_fallback=_seuils['seuil_global_fallback'],
+            model=joblib.load(os.path.join(if_dir, 'model.pkl')),
+            seuil=joblib.load(os.path.join(if_dir, 'seuil_optimal.pkl'))['seuil_optimal'],
         )
         # Médianes par source (imputation en mode dégradé) : statistique
         # descriptive indépendante du modèle de scoring -> toujours calculée
@@ -103,7 +101,7 @@ class NIDSPredictor:
         # entraîné/validé faute de données réelles) reste exclu ici.
         self.medianes_par_source = {}
         for source in ['netflow', 'cicflowmeter', 'zeek']:
-            medianes_path = os.path.join(if_dir, source, 'medianes_palier1.pkl')
+            medianes_path = os.path.join(if_dir, 'medianes_palier1', f'{source}.pkl')
             if os.path.exists(medianes_path):
                 self.medianes_par_source[source] = joblib.load(medianes_path)
 
@@ -199,14 +197,13 @@ class NIDSPredictor:
             # suspect). Impact si des dashboards Kibana existants trient sur
             # ce champ : à adapter au moment de l'intégration ELK.
             proba = self.palier1['model'].predict_proba(X)[:, 1]
-            # Seuil GLOBAL (pas par source) : testé et abandonné -- un seuil
-            # calibré séparément par source sur la validation interne (dérivée
-            # de la même distribution que l'entraînement) s'est avéré NEUTRE à
-            # LÉGÈREMENT NÉGATIF sur données réellement nouvelles (TEST2/3/4,
-            # recall zeek 51%->50% au lieu de mieux), donc abandonné plutôt que
-            # gardé pour une fausse impression de rigueur. Voir
-            # isolation_forest/results/rapport_recalibration_seuil_supervise.txt.
-            y_pred = (proba >= self.palier1['seuil_fallback']).astype(bool)
+            # Seuil GLOBAL (pas par source) : un seuil calibré séparément par
+            # source sur la validation interne (dérivée de la même
+            # distribution que l'entraînement) a été testé et abandonné --
+            # neutre à légèrement négatif sur données réellement nouvelles
+            # (recall zeek 51%->50% au lieu de mieux) plutôt qu'une
+            # amélioration.
+            y_pred = (proba >= self.palier1['seuil']).astype(bool)
 
             out.loc[idx_scorable, 'ml_status'] = np.where(a_impute.loc[idx_scorable], 'scoring_degrade', 'ok')
             out.loc[idx_scorable, 'is_attack'] = y_pred

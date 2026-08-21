@@ -104,8 +104,8 @@ RF_DIR = os.path.join(MD4_DIR, 'random_forest', 'models')
 # jamais re-vérifié contre cet échantillon frais jusqu'ici -- contrairement
 # à l'ancien IF, entraîné sur TOUT combined_train.pkl y compris le normal
 # 2018 exclu spécifiquement pour l'ancien IF).
-model_if = joblib.load(os.path.join(IF_DIR, 'model_supervise.pkl'))
-seuil_if = joblib.load(os.path.join(IF_DIR, 'seuil_optimal_supervise.pkl'))['seuil_global_fallback']
+model_if = joblib.load(os.path.join(IF_DIR, 'model.pkl'))
+seuil_if = joblib.load(os.path.join(IF_DIR, 'seuil_optimal.pkl'))['seuil_optimal']
 
 X_if = df_frais[cs.ISOLATION_FOREST_FEATURES].values.astype(np.float32)
 scores = model_if.predict_proba(X_if)[:, 1]
