@@ -1,0 +1,26 @@
+RAPPORT RANDOM FOREST (SOCLE CANONIQUE MULTI-SOURCE, HistGradientBoosting)
+============================================================
+
+features (22, palier 1+2) : ['L4_DST_PORT_BUCKET', 'PROTOCOL', 'IN_BYTES', 'OUT_BYTES', 'IN_PKTS', 'OUT_PKTS', 'FLOW_DURATION_MILLISECONDS', 'HAS_SYN', 'HAS_ACK', 'HAS_FIN', 'HAS_RST', 'HAS_PSH', 'HAS_URG', 'ratio_bytes', 'total_bytes', 'total_pkts', 'duree_sec', 'LONGEST_FLOW_PKT', 'SRC_TO_DST_IAT_AVG', 'SRC_TO_DST_IAT_STDDEV', 'DST_TO_SRC_IAT_AVG', 'DST_TO_SRC_IAT_STDDEV']
+Meilleurs hyperparamètres : {'max_leaf_nodes': 63, 'max_iter': 250, 'max_depth': 10, 'learning_rate': 0.2}
+
+Résultats par bloc (poolé + par source) :
+  [POOLE               ] n=265,661  Acc=99.6%  Prec=99.6%  Rec=99.6%  F1=99.6%
+  [CICFLOWMETER        ] n=161,727  Acc=99.6%  Prec=99.6%  Rec=99.6%  F1=99.6%
+  [NETFLOW             ] n=73,620  Acc=99.5%  Prec=99.5%  Rec=99.5%  F1=99.5%
+  [ZEEK                ] n=30,314  Acc=100.0%  Prec=100.0%  Rec=100.0%  F1=100.0%
+
+Seuil de confiance = 0.7 : 264,663/265,661 automatiques, accuracy = 99.7%
+
+Rapport de classification détaillé (poolé) :
+                     precision    recall  f1-score   support
+
+ acces_non_autorise       0.97      0.98      0.97     10550
+        brute_force       0.99      1.00      0.99     28651
+   intrusion_reseau       1.00      1.00      1.00    152920
+      port_scanning       1.00      1.00      1.00     61646
+suspicious_activity       0.99      1.00      0.99     11894
+
+           accuracy                           1.00    265661
+          macro avg       0.99      0.99      0.99    265661
+       weighted avg       1.00      1.00      1.00    265661

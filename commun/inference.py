@@ -106,7 +106,7 @@ class NIDSPredictor:
             if os.path.exists(medianes_path):
                 self.medianes_par_source[source] = joblib.load(medianes_path)
 
-        rf_dir = os.path.join(md4_dir, 'random_forest', 'models')
+        rf_dir = os.path.join(md4_dir, 'hist_gradient_boosting_palier2', 'models')
         self.rf_model = joblib.load(os.path.join(rf_dir, 'model.pkl'))
         self.rf_label_encoder = joblib.load(os.path.join(rf_dir, 'label_encoder.pkl'))
         self.rf_seuil_confiance = joblib.load(os.path.join(rf_dir, 'seuil_confiance.pkl'))['seuil_confiance']

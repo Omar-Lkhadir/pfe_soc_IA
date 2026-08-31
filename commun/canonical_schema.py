@@ -1,5 +1,8 @@
 """
-Schéma canonique tool-agnostic partagé par Isolation Forest et Random Forest.
+Schéma canonique tool-agnostic partagé par le Palier 1 et le Palier 2
+(hist_gradient_boosting/ et hist_gradient_boosting_palier2/ -- les deux
+utilisent HistGradientBoostingClassifier, voir le README pour l'historique
+du nommage des dossiers).
 
 Contexte : les modèles historiques (v1) étaient entraînés sur les colonnes
 NetFlow brutes de BigFlow-NIDS-V2.csv. Testés sur un format différent
@@ -13,7 +16,7 @@ Suricata, ...) doit remplir, en deux paliers :
   jamais de valeur manquante. Utilisé par les DEUX modèles.
 - PALIER 2 (TIER2) : disponible sur NetFlow et CICFlowMeter, mais pas
   garanti partout (ex. Zeek conn.log basique n'a pas les stats d'IAT).
-  Utilisé UNIQUEMENT par Random Forest (HistGradientBoostingClassifier,
+  Utilisé UNIQUEMENT par le Palier 2 (HistGradientBoostingClassifier,
   qui tolère nativement les NaN) -> jamais de constante fabriquée pour
   compenser une source qui ne fournit pas ce palier.
 
@@ -61,8 +64,8 @@ TIER2_FEATURES = [
 ]  # 5 features
 
 # Features utilisées par chaque modèle
-ISOLATION_FOREST_FEATURES = TIER1_FEATURES                    # 17, jamais de NaN
-RANDOM_FOREST_FEATURES = TIER1_FEATURES + TIER2_FEATURES      # 22, NaN toléré (palier 2)
+PALIER1_FEATURES = TIER1_FEATURES                    # 17, jamais de NaN
+PALIER2_FEATURES = TIER1_FEATURES + TIER2_FEATURES   # 22, NaN toléré (palier 2)
 
 # Colonnes non-feature toujours présentes en sortie d'un adaptateur
 META_COLS = ['Label_binaire', 'Attack_brut', 'source']

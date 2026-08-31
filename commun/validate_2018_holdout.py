@@ -98,7 +98,7 @@ print(df_frais.groupby('categorie_5').size())
 # EVALUATION — modeles deja entraines
 # ============================================================
 IF_DIR = os.path.join(MD4_DIR, 'hist_gradient_boosting', 'models')
-RF_DIR = os.path.join(MD4_DIR, 'random_forest', 'models')
+RF_DIR = os.path.join(MD4_DIR, 'hist_gradient_boosting_palier2', 'models')
 
 # Palier 1 supervisé (remplace l'ancien Isolation Forest cicflowmeter,
 # jamais re-vérifié contre cet échantillon frais jusqu'ici -- contrairement
@@ -107,7 +107,7 @@ RF_DIR = os.path.join(MD4_DIR, 'random_forest', 'models')
 model_if = joblib.load(os.path.join(IF_DIR, 'model.pkl'))
 seuil_if = joblib.load(os.path.join(IF_DIR, 'seuil_optimal.pkl'))['seuil_optimal']
 
-X_if = df_frais[cs.ISOLATION_FOREST_FEATURES].values.astype(np.float32)
+X_if = df_frais[cs.PALIER1_FEATURES].values.astype(np.float32)
 scores = model_if.predict_proba(X_if)[:, 1]
 y_pred_if = (scores >= seuil_if).astype(int)
 y_true = df_frais['Label_binaire'].values

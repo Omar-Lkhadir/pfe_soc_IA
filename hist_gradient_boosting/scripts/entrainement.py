@@ -11,8 +11,9 @@
 ║  meilleur (96-99,9% sur les mêmes 17 features Tier1).                       ║
 ║                                                                                ║
 ║  Ce script entraîne le palier 1 comme un problème supervisé : même          ║
-║  HistGradientBoostingClassifier que le palier 2 (random_forest/),           ║
-║  MÊMES 17 features Tier1 (ISOLATION_FOREST_FEATURES, zéro nouvelle          ║
+║  HistGradientBoostingClassifier que le palier 2                             ║
+║  (hist_gradient_boosting_palier2/), MÊMES 17 features Tier1                 ║
+║  (PALIER1_FEATURES, zéro nouvelle                                           ║
 ║  feature), cible = Label_binaire au lieu de la catégorie d'attaque. UN      ║
 ║  SEUL modèle partagé entre les 3 sources (comme le palier 2, jamais         ║
 ║  besoin d'un modèle par source puisqu'il apprend "qu'est-ce qui             ║
@@ -64,7 +65,7 @@ sys.path.insert(0, MD4_DIR)
 from commun import canonical_schema as cs
 
 DATA_DIR = os.path.join(MD4_DIR, 'commun', 'data')
-FEATURES = list(cs.ISOLATION_FOREST_FEATURES)
+FEATURES = list(cs.PALIER1_FEATURES)
 start_total = time.time()
 
 # ============================================================
