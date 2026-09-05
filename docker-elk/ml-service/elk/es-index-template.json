@@ -1,0 +1,38 @@
+{
+  "index_patterns": ["nids-ml-*"],
+  "priority": 200,
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 1
+    },
+    "mappings": {
+      "dynamic": true,
+      "properties": {
+        "ml_status": {
+          "type": "keyword",
+          "meta": { "description": "Statut scoring: ok/degrade/non_reconnu/indispo" }
+        },
+        "is_attack": {
+          "type": "boolean",
+          "meta": { "description": "Palier 1 : attaque detectee (bool)" }
+        },
+        "anomaly_score": {
+          "type": "float",
+          "meta": { "description": "Proba attaque palier 1, 0-1 (haut=suspect)" }
+        },
+        "attack_category": {
+          "type": "keyword",
+          "meta": { "description": "Categorie attaque (palier 2, 5 classes)" }
+        },
+        "confidence": {
+          "type": "float",
+          "meta": { "description": "Confiance palier 2 dans la categorie" }
+        }
+      }
+    }
+  },
+  "_meta": {
+    "description": "Template pour l'index de sortie du pipeline NIDS (PFE IT6). Les champs event.*/source.*/destination.*/zeek.*/etc. produits par Filebeat restent en mapping dynamique (déjà couverts par les templates ECS de chaque module Filebeat) -- ce template n'ajoute que les 5 champs produits par commun/inference.py."
+  }
+}

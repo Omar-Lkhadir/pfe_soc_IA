@@ -1,0 +1,7 @@
+# Dictionnaire IP -> nom d'hote lisible pour le dashboard SOC.
+# Pas de DNS inverse fiable sur un LAN isole de laboratoire (pas de zone
+# reverse configuree) -- mapping statique a completer selon les VM du TP.
+# Recharge automatiquement toutes les 30s (translate filter, refresh_interval),
+# donc une modification ici est prise en compte sans redemarrer Logstash.
+"192.168.1.33": "VM2-attaquant"
+"192.168.1.48": "VM1-victime (SIEM)"

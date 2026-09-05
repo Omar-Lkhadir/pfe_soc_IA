@@ -1,0 +1,11 @@
+# Versions exactes utilisées pour entraîner/sérialiser les modèles (.pkl) --
+# une version scikit-learn différente peut refuser de charger model.pkl.
+scikit-learn==1.4.2
+pandas==2.2.2
+numpy==1.26.4
+joblib==1.4.0
+fastapi==0.141.1
+uvicorn==0.52.3
+pydantic>=2.0
+requests==2.32.3
+python-multipart==0.0.9

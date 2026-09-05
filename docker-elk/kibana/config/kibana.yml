@@ -1,0 +1,24 @@
+# Configuration Kibana minimal pour SOC
+server.name: kibana
+server.host: "0.0.0.0"
+server.port: 5601
+
+# Elasticsearch connection
+elasticsearch.hosts: [ "http://elasticsearch:9200" ]
+elasticsearch.username: "kibana_system"
+elasticsearch.password: "${KIBANA_SYSTEM_PASSWORD}"
+
+# Monitoring
+monitoring.ui.container.elasticsearch.enabled: true
+
+# Désactiver APM
+#xpack.apm.enabled: false
+
+# Désactiver Fleet
+#xpack.fleet.enabled: false
+
+
+
+xpack.encryptedSavedObjects.encryptionKey: "azerty1234567890azertyuiop123456"
+xpack.reporting.encryptionKey: "qwerty1234567890qwertyuiop123456"
+

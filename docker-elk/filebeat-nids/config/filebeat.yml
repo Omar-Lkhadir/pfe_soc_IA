@@ -1,0 +1,32 @@
+## Filebeat dedie au flux NIDS temps reel -- lit le conn.log Zeek "live"
+## (alimente par le conteneur zeek-replay) et l'envoie brut a Logstash
+## (pipeline nids, port 5045), qui fait lui-meme le decodage TSV natif
+## Zeek + l'appel au modele ML. Volontairement PAS le module Filebeat
+## "zeek" officiel : celui-ci s'appuie sur des pipelines d'ingestion
+## Elasticsearch enregistres via une sortie output.elasticsearch, jamais
+## teste dans ce depot avec une sortie Logstash pure (cf. elk/README.md
+## du modele) -- le decodage explicite en Logstash est plus previsible.
+
+filebeat.inputs:
+  - type: filestream
+    id: zeek-conn-live
+    paths:
+      - /var/log/zeek-live/conn.log
+    fields:
+      log_type: zeek_raw
+    fields_under_root: false
+    ignore_older: 0
+    # Demarre a la FIN du fichier plutot que de rejouer tout l'historique --
+    # sans ca, un gros pic de trafic (scan/flood) laisse un arrere non traite
+    # que le pipeline (appel HTTP synchrone par evenement) met des heures a
+    # rattraper, bloquant toute visibilite temps reel des evenements suivants.
+    tail_files: true
+
+output.logstash:
+  hosts: ["logstash:5045"]
+
+logging.level: info
+
+http:
+  enabled: true
+  host: 0.0.0.0

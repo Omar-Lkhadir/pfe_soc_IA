@@ -1,0 +1,11 @@
+- pipeline.id: main
+  path.config: "/usr/share/logstash/pipeline/main.conf"
+
+- pipeline.id: nids
+  path.config: "/usr/share/logstash/pipeline/nids.conf"
+  # Limite le parallelisme des appels HTTP vers ml-service -- 6 workers
+  # (defaut = nb de coeurs) envoyant tous des requetes concurrentes vers un
+  # service CPU-bound (inference sklearn) sur la MEME machine (6 coeurs
+  # partages avec Elasticsearch/Kibana/Zeek) cree plus de contention CPU que
+  # de debit reel (charge systeme observee : 12-15 sur 6 coeurs).
+  pipeline.workers: 2
